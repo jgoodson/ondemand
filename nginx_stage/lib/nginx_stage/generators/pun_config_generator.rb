@@ -29,7 +29,11 @@ module NginxStage
 
     # Block starting up PUNs for users with disabled shells
     add_hook :block_user_with_disabled_shell do
-      raise InvalidUser, "user has disabled shell: #{user}" if user.shell == NginxStage.disabled_shell
+      if NginxStage.disabled_shell.kind_of?(Array)
+        raise InvalidUser, "user has disabled shell: #{user}" if (NginxStage.disabled_shell.include?(user.shell)
+      else
+        raise InvalidUser, "user has disabled shell: #{user}" if user.shell == NginxStage.disabled_shell
+      end
     end
 
     # Accepts `skip_nginx` as an option
