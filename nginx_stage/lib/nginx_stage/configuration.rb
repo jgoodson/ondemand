@@ -379,11 +379,11 @@ module NginxStage
     # @return [Integer] minimum user id required to run as user
     attr_accessor :min_uid
 
-    # Restrict starting up per-user NGINX process as user with this shell.
+    # Restrict starting up per-user NGINX process as user with this shell or shells.
     # NB: This only affects the <tt>pun</tt> command, you are still able to
     #     start or stop the PUN using other commands (e.g., <tt>nginx</tt>,
     #     <tt>nginx_clean</tt>, ...)
-    # @return [String] user shell that is blocked
+    # @return [String, Array<String>] user shell(s) that is blocked
     attr_accessor :disabled_shell
 
     # Set BUNDLE_USER_CONFIG to /dev/null in the PUN environment
