@@ -1,6 +1,7 @@
-local user_map = require 'ood.user_map'
-local proxy    = require 'ood.proxy'
-local http     = require 'ood.http'
+local user_map    = require 'ood.user_map'
+local proxy       = require 'ood.proxy'
+local http        = require 'ood.http'
+local dnode       = require 'ood.dnode'
 
 --[[
   node_proxy_handler
@@ -16,6 +17,7 @@ function node_proxy_handler(r)
   local map_fail_uri    = r.subprocess_env['OOD_MAP_FAIL_URI']
   local pun_socket_root = r.subprocess_env['OOD_PUN_SOCKET_ROOT']
   local node_pun_proxy  = r.subprocess_env['OOD_PUN_PROXY']
+  local dynamic_proxy   = r.subprocess_env['OOD_PROXY_DYNAMIC']
 
   -- read in <LocationMatch> regular expression captures
   local host = r.subprocess_env['MATCH_HOST']
@@ -33,10 +35,10 @@ function node_proxy_handler(r)
   end
 
   -- generate connection object used in setting the reverse proxy
+  
   local conn = {}
   conn.user = user
-  conn.server = host .. ":" .. port
- 
+
   -- Route the request through the PUN socket if we are using that method
   if node_pun_proxy then
     pun_proxy = true
@@ -44,7 +46,22 @@ function node_proxy_handler(r)
   else
     pun_proxy = false
   end
-   
+
+  -- Check if we are proxying based on route database
+  if dynamic_proxy then
+    
+    conn.server = dnode.map(r, user, r.port)
+
+    -- No route found, decline and let the next handler work
+    if conn.server == "" then
+      r:custom_response(404, "No tunnel found for user")
+      return apache2.DECLINED
+    end
+  else
+    -- Proxy based on information extracted from URI
+    conn.server = host .. ":" .. port
+  end
+  
   conn.uri = uri or r.uri or '/'
 
   -- last ditch effort to ensure that the uri is at least something

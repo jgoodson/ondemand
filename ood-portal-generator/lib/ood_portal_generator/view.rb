@@ -83,6 +83,18 @@ module OodPortalGenerator
       @node_uri   = opts.fetch(:node_uri, nil)
       @rnode_uri  = opts.fetch(:rnode_uri, nil)
 
+      # Dynamic reverse proxy sub-uri
+      @dnode_uri       = opts.fetch(:dnode_uri, nil)
+      @dnode_dbpath    = opts.fetch(:dnode_dbpath, "/var/www/ood/db/proxy.db")
+      default_dnode = "/opt/ood/dnode_mapper/lib/dnode.so"
+      if File.exist?(default_dnode)
+        @dnode_libpath   = opts.fetch(:dnode_libpath, default_dnode)
+      else
+        @dnode_libpath   = opts.fetch(:dnode_libpath, nil)
+      end
+      @dnode_min_port  = opts.fetch(:dnode_min_port, 10000)
+      @dnode_max_port  = opts.fetch(:dnode_max_port, 10004)
+
       # Per-user NGINX sub-uri
       @nginx_uri              = opts.fetch(:nginx_uri, "/nginx")
       @pun_uri                = opts.fetch(:pun_uri, "/pun")

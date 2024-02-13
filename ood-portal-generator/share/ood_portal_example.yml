@@ -251,6 +251,37 @@
 # Default: null (disable this feature)
 #rnode_uri: null
 
+# Sub-uri used to reverse proxy to backend web server running on node that
+# ONLY uses *abolute* URI paths and cannot be rewritten with /rnode
+# Example:
+#     rnode_uri: '/dnode'
+# Default: null (disable this feature)
+#dnode_uri: null
+
+# Path to sqlite3 database for storing /dnode routes per-user
+# Example:
+#     dnode_dbpath: '/var/www/ood/db/proxy.db'
+# Default: '/var/www/ood/db/proxy.db' (use controlled by dnode_uri)
+#dnode_dbpath: null
+
+# Path to Lua module for alternate /dnode mapping methods
+# Example:
+#     dnode_libpath: '/opt/ood/dnode_mapper/lib/dnode.so
+# Default: '/opt/ood/dnode_mapper/lib/dnode.so' (use controlled by dnode_uri)
+#dnode_libpath: null
+
+# The starting port used for /dnode proxying routes
+# Example:
+#     port: 10000
+# Default: 10000 (use controlled by dnode_uri)
+#dnode_min_port: 10000
+
+# The ending port used for /dnode proxying routes
+# Example:
+#     port: 10004
+# Default: 10004 (use controlled by dnode_uri)
+#dnode_max_port: 10004
+
 #
 # Per-user NGINX Passenger apps
 #
