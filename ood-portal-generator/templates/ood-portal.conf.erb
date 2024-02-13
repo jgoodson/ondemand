@@ -125,6 +125,12 @@ Listen <%= addr_port %>
   <%= line %>
   <%- end -%>
   <%- end -%>
+  <%- if @secure_backend -%>
+  SSLProxyEngine on
+  <%- @ssl_proxy.each do |line| -%>
+  <%= line %>
+  <%- end -%>
+  <%- end -%>
 
   <%- if @oidc_uri && @oidc_provider_metadata_url && @oidc_client_id -%>
   # OIDC configuration
@@ -234,6 +240,9 @@ Listen <%= addr_port %>
     <%= line %>
     <%- end -%>
 
+    SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
+    SetEnv OOD_SECURE_USERHOST <%= @user_host ? 1 : 0 %>
+
     # ProxyPassReverse implementation
     Header edit Location "^[^/]+//[^/]+" ""
 
@@ -262,6 +271,9 @@ Listen <%= addr_port %>
     <%- @custom_location_directives.to_a.each do |line| -%>
     <%= line %>
     <%- end -%>
+
+    SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
+    SetEnv OOD_SECURE_USERHOST <%= @user_host ? 1 : 0 %>
 
     # ProxyPassReverse implementation
     Header edit Location "^([^/]+//[^/]+)|(?=/)|^([\./]{1,}(?<!/))" "<%= @rnode_uri %>/%{MATCH_HOST}e/%{MATCH_PORT}e"

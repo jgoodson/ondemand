@@ -14,6 +14,8 @@ function node_proxy_handler(r)
   local user_map_cmd    = r.subprocess_env['OOD_USER_MAP_CMD']
   local user_env        = r.subprocess_env['OOD_USER_ENV']
   local map_fail_uri    = r.subprocess_env['OOD_MAP_FAIL_URI']
+  local secure_backend  = r.subprocess_env['OOD_SECURE_NODE_PROXY']
+  local user_host       = r.subprocess_env['OOD_SECURE_USERHOST']
 
   -- read in <LocationMatch> regular expression captures
   local host = r.subprocess_env['MATCH_HOST']
@@ -43,7 +45,7 @@ function node_proxy_handler(r)
   end
 
   -- setup request for reverse proxy
-  proxy.set_reverse_proxy(r, conn)
+  proxy.set_reverse_proxy(r, conn, secure_backend, user_host)
 
   -- handle if backend server is down
   r:custom_response(503, "Failed to connect to " .. conn.server)
