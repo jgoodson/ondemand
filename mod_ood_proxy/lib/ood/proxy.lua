@@ -3,9 +3,13 @@
 
   Modify a given request to utilize mod_proxy for reverse proxying.
 --]]
-function set_reverse_proxy(r, conn)
+function set_reverse_proxy(r, conn, secure, userhost)
   -- find protocol used by parsing the request headers
   local protocol = (r.headers_in['Upgrade'] and "ws://" or "http://")
+
+  if secure then
+    protocol = (protocol == "ws://" and "wss://" or "https://")
+  end
 
   -- setup request to use mod_proxy for the reverse proxy
   r.handler = "proxy-server"
@@ -14,6 +18,8 @@ function set_reverse_proxy(r, conn)
   -- define reverse proxy destination using connection object
   if conn.socket then
     r.filename = "proxy:unix:" .. conn.socket .. "|" .. protocol .. "localhost" .. conn.uri
+  elseif userhost then
+    r.filename = "proxy:" .. protocol .. conn.user .. "." .. conn.server .. conn.uri
   else
     r.filename = "proxy:" .. protocol .. conn.server .. conn.uri
   end
