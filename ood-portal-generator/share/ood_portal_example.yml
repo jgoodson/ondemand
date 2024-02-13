@@ -261,6 +261,28 @@
 # Default: null (disable this feature)
 #rnode_uri: null
 
+# Whether to reverse proxy to backend nodes using TLS
+# Examples:
+#     node_proxy_secure: true
+# Default: false (disable this feature)
+#proxy_secure: false
+
+# Whether to reverse proxy to backend nodes using user-specific subdomain
+# Examples:
+#     node_proxy_userhost: true
+# Default: false (disable this feature)
+#proxy_userhost: false
+
+# List of SSLProxy Apache directives for secure reverse proxy
+# Example:
+#     ssl_proxy:
+#       - 'SSLProxyCACertificateFile "/etc/pki/tls/certs/node_CA.crt"'
+#       - 'SSLProxyCipherSuite EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH'
+#       - 'SSLProxyMachineCertificateFile "/etc/pki/tls/certs/ondemand-proxy.crt"'
+#       - 'SSLProxyProtocol +TLSv1.1 +TLSv1.2 +TLSv1.3'
+# Default: null (no reverse proxy SSL support)
+#ssl_proxy: null
+
 #
 # Per-user NGINX Passenger apps
 #

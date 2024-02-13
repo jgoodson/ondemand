@@ -81,6 +81,11 @@ module OodPortalGenerator
       @logout_uri      = opts.fetch(:logout_uri, "/logout")
       @logout_redirect = opts.fetch(:logout_redirect, "/pun/sys/dashboard/logout")
 
+      # Reverse proxy security
+      @secure_backend = opts.fetch(:proxy_secure, false)
+      @user_host      = opts.fetch(:proxy_userhost, false)
+      @ssl_proxy      = opts.fetch(:ssl_proxy, nil)
+
       # Basic reverse proxy sub-uri
       @host_regex = opts.fetch(:host_regex, "[^/]+")
       @node_uri   = opts.fetch(:node_uri, nil)
