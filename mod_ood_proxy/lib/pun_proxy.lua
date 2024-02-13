@@ -60,7 +60,7 @@ function pun_proxy_handler(r)
   end
 
   -- setup request for reverse proxy
-  proxy.set_reverse_proxy(r, conn)
+  proxy.set_reverse_proxy(r, conn, false, false)
 
   -- let the proxy handler do this instead
   return apache2.DECLINED

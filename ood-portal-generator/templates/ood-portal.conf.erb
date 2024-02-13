@@ -137,6 +137,12 @@ Listen <%= addr_port %>
   <%= line %>
   <%- end -%>
   <%- end -%>
+  <%- if @secure_backend -%>
+  SSLProxyEngine on
+  <%- @ssl_proxy.each do |line| -%>
+  <%= line %>
+  <%- end -%>
+  <%- end -%>
 
   <%- if @oidc_uri && @oidc_provider_metadata_url && @oidc_client_id -%>
   # OIDC configuration
@@ -246,6 +252,9 @@ Listen <%= addr_port %>
     <%= line %>
     <%- end -%>
 
+    SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
+    SetEnv OOD_SECURE_USERHOST <%= @user_host ? 1 : 0 %>
+
     # ProxyPassReverse implementation
     Header edit Location "^[^/]+//[^/]+" ""
 
@@ -275,6 +284,9 @@ Listen <%= addr_port %>
     <%= line %>
     <%- end -%>
 
+    SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
+    SetEnv OOD_SECURE_USERHOST <%= @user_host ? 1 : 0 %>
+
     # ProxyPassReverse implementation
     Header edit Location "^([^/]+//[^/]+)|(?=/)|^([\./]{1,}(?<!/))" "<%= @rnode_uri %>/%{MATCH_HOST}e/%{MATCH_PORT}e"
 
@@ -301,6 +313,8 @@ Listen <%= addr_port %>
     SetEnv OOD_DNODE_HOSTNAME "<%= @proxy_server %>"
     SetEnv OOD_DNODE_PORT_START <%= @dnode_min_port %>
     SetEnv OOD_DNODE_PORT_END <%= @dnode_max_port %>
+    SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
+    SetEnv OOD_SECURE_USERHOST <%= @user_host ? 1 : 0 %>
 
     <%- @auth.each do |line| -%>
     <%= line %>
@@ -475,6 +489,9 @@ Listen <%= addr_port %>
       SetEnv OOD_PROXY_DYNAMIC true
       SetEnv OOD_DNODE_DBTYPE "<%= @dnode_dbtype %>"
       SetEnv OOD_DNODE_DBPATH "<%= @dnode_dbpath %>"
+
+      SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
+      SetEnv OOD_SECURE_USERHOST <%= @user_host ? 1 : 0 %>
 
       <%- @auth.each do |line| -%>
       <%= line %>
