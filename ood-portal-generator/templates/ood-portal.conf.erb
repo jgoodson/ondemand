@@ -69,7 +69,11 @@ Listen <%= addr_port %>
 
 # The Open OnDemand portal VirtualHost
 #
+<%- if @dnode_uri -%>
+<VirtualHost *:<%= @port %><% (@dnode_min_port.to_i...@dnode_max_port.to_i+1 ).each do |port|%> *:<%= port %><% end %>>
+<%- else -%>
 <VirtualHost *:<%= @port %>>
+<%- end -%>
   <%- if @servername -%>
   ServerName <%= @servername %>
   <%- end -%>
@@ -87,12 +91,20 @@ Listen <%= addr_port %>
   <%- end -%>
   <%- end -%>
 
-  <%- if @servername && @use_rewrites -%>
+  <%- if @dnode_uri -%>
+  <If "%{SERVER_PORT} -eq <%= @port %>">
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} !^(<%= @proxy_server %>(:<%= @port %>)?)?$ [NC]
+    RewriteRule ^(.*) <%= @ssl ? "https" : "http" %>://<%= @proxy_server %>:<%= @port %>$1 [R=301,NE,L]
+  </If>
+  <%- else -%>
+    <%- if @servername && @use_rewrites -%>
   RewriteEngine On
   <%- (@server_aliases + [@proxy_server]).each do |server| -%>
   RewriteCond %{HTTP_HOST} !^(<%= server %>(:<%= @port %>)?)?$ [NC]
   <%- end -%>
   RewriteRule ^(.*) <%= @ssl ? "https" : "http" %>://<%= @proxy_server %>:<%= @port %>$1 [R=301,NE,L]
+    <%- end -%>
   <%- end -%>
 
   <%- if @use_rewrites && @use_maintenance -%>
@@ -125,6 +137,12 @@ Listen <%= addr_port %>
   <%= line %>
   <%- end -%>
   <%- end -%>
+  <%- if @secure_backend -%>
+  SSLProxyEngine on
+  <%- @ssl_proxy.each do |line| -%>
+  <%= line %>
+  <%- end -%>
+  <%- end -%>
 
   <%- if @oidc_uri && @oidc_provider_metadata_url && @oidc_client_id -%>
   # OIDC configuration
@@ -134,7 +152,7 @@ Listen <%= addr_port %>
   <%- if @oidc_client_secret -%>
   OIDCClientSecret <%= @oidc_client_secret %>
   <%- end -%>
-  OIDCRedirectURI <%= @oidc_redirect_uri %>
+  OIDCRedirectURI <%= @oidc_uri %>
   OIDCRemoteUserClaim <%= @oidc_remote_user_claim %>
   OIDCScope "<%= @oidc_scope %>"
   OIDCCryptoPassphrase <%= @oidc_crypto_passphrase %>
@@ -161,6 +179,9 @@ Listen <%= addr_port %>
   LuaRoot "<%= @lua_root %>"
   <%- end -%>
   LogLevel lua_module:<%= @lua_log_level %>
+  <%- if @dnode_libpath -%>
+  LuaPackageCPath <%= @dnode_libpath %>
+  <%- end -%>
 
   # Log authenticated user requests (requires min log level: info)
   LuaHookLog logger.lua logger
@@ -234,6 +255,9 @@ Listen <%= addr_port %>
     <%= line %>
     <%- end -%>
 
+    SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
+    SetEnv OOD_SECURE_USERHOST <%= @user_host ? 1 : 0 %>
+
     # ProxyPassReverse implementation
     Header edit Location "^[^/]+//[^/]+" ""
 
@@ -263,6 +287,9 @@ Listen <%= addr_port %>
     <%= line %>
     <%- end -%>
 
+    SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
+    SetEnv OOD_SECURE_USERHOST <%= @user_host ? 1 : 0 %>
+
     # ProxyPassReverse implementation
     Header edit Location "^([^/]+//[^/]+)|(?=/)|^([\./]{1,}(?<!/))" "<%= @rnode_uri %>/%{MATCH_HOST}e/%{MATCH_PORT}e"
 
@@ -274,6 +301,28 @@ Listen <%= addr_port %>
     Header edit  Set-Cookie "^([^;]+)" "$1; Path=<%= @rnode_uri %>/%{MATCH_HOST}e/%{MATCH_PORT}e"
 
     LuaHookFixups node_proxy.lua node_proxy_handler
+  </LocationMatch>
+  <%- end -%>
+
+  <%- if @dnode_uri -%>
+  # Configure reverse "dynamic" proxy traffic to backend webserver through IP sockets:
+  #
+  #     <%= @ssl ? "https" : "http" %>://<%= @servername || "localhost" %>:<%= @port %><%= @dnode_uri %>/HOST/PORT
+  #     configures: https://<%= @servername || "localhost" %>:IN_PORT/* => http://NODE:PORT/*
+  #
+  <LocationMatch "^<%= @dnode_uri %>/(?<host><%= @host_regex || "[^/]+" %>)/(?<port>\d+)">
+    SetEnv OOD_DNODE_DBPATH "<%= @dnode_dbpath %>"
+    SetEnv OOD_DNODE_HOSTNAME "<%= @proxy_server %>"
+    SetEnv OOD_DNODE_PORT_START <%= @dnode_min_port %>
+    SetEnv OOD_DNODE_PORT_END <%= @dnode_max_port %>
+    SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
+    SetEnv OOD_SECURE_USERHOST <%= @user_host ? 1 : 0 %>
+
+    <%- @auth.each do |line| -%>
+    <%= line %>
+    <%- end -%>
+
+    LuaHookFixups dyn_setup.lua dyn_setup_handler
   </LocationMatch>
   <%- end -%>
 
@@ -307,6 +356,11 @@ Listen <%= addr_port %>
     SetEnv OOD_PUN_MAX_RETRIES "<%= @pun_max_retries %>"
     LuaHookFixups pun_proxy.lua pun_proxy_handler
 
+    <%- if @analytics -%>
+    SetEnv OOD_ANALYTICS_TRACKING_URL "<%= @analytics['url'] %>"
+    SetEnv OOD_ANALYTICS_TRACKING_ID  "<%= @analytics['id']  %>"
+    LuaHookLog analytics.lua analytics_handler
+    <%- end -%>
   </Location>
 
   # Control backend PUN for authenticated user:
@@ -335,7 +389,13 @@ Listen <%= addr_port %>
   #     <%= @ssl ? "https" : "http" %>://<%= @servername || "localhost" %>:<%= @port %>/
   #     #=> <%= @ssl ? "https" : "http" %>://<%= @servername || "localhost" %>:<%= @port %><%= @root_uri %>
   #
+  <%- if @dnode_uri -%>
+  <If "%{SERVER_PORT} -eq <%= @port %>">
+    RedirectMatch ^/$ "<%= @root_uri %>"
+  </If>
+  <%- else -%>
   RedirectMatch ^/$ "<%= @root_uri %>"
+  <%- end -%>
   <%- end -%>
 
   <%- if @logout_uri && @logout_redirect -%>
@@ -344,7 +404,13 @@ Listen <%= addr_port %>
   #     <%= @ssl ? "https" : "http" %>://<%= @servername || "localhost" %>:<%= @port %><%= @logout_uri %>
   #     #=> <%= @ssl ? "https" : "http" %>://<%= @servername || "localhost" %>:<%= @port %><%= @logout_redirect %>
   #
+  <%- if @dnode_uri -%>
+  <If "%{SERVER_PORT} -eq <%= @port %>">
+    Redirect "<%= @logout_uri %>" "<%= @logout_redirect %>"
+  </If>
+  <%- else -%>
   Redirect "<%= @logout_uri %>" "<%= @logout_redirect %>"
+  <%- end -%>
   <%- end -%>
 
   <%- if @oidc_uri -%>
@@ -410,5 +476,36 @@ Listen <%= addr_port %>
     <%= line %>
     <%- end -%>
   </Directory>
+  <%- end -%>
+
+  <%- if @dnode_uri -%>
+  # Dynamically reverse proxy user traffic to configured backend webserver through IP sockets:
+  #
+  #     <%= @ssl ? "https" : "http" %>://<%= @servername || "localhost" %>:DNODE_IN_PORT/index.html
+  #     #=> http://HOST:PORT/index.html
+  #
+  <Location "/">
+    <If "%{SERVER_PORT} -ne <%= @port %>">
+      LuaScope server
+
+      SetEnv OOD_PROXY_DYNAMIC true
+      SetEnv OOD_DNODE_DBPATH "<%= @dnode_dbpath %>"
+
+      SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
+      SetEnv OOD_SECURE_USERHOST <%= @user_host ? 1 : 0 %>
+
+      <%- @auth.each do |line| -%>
+      <%= line %>
+      <%- end -%>
+
+      Header edit Location "<%= @host_regex || "[^/]+" %>:\d+" "<%= @proxy_server %>:%{SERVER_PORT}s"
+      Header always set Access-Control-Allow-Credentials "true"
+      Header always set Access-Control-Allow-Origin "https://<%= @proxy_server %>"
+      Header always set Content-Security-Policy "frame-ancestors https://<%= @proxy_server %>:%{SERVER_PORT}s;"
+
+      Header edit* Set-Cookie ";\s*(?i)Domain[^;]*" ""
+      LuaHookFixups node_proxy.lua node_proxy_handler
+    </If>
+  </Location>
   <%- end -%>
 </VirtualHost>

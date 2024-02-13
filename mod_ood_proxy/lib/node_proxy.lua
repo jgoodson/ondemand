@@ -1,12 +1,13 @@
-local user_map = require 'ood.user_map'
-local proxy    = require 'ood.proxy'
-local http     = require 'ood.http'
+local user_map    = require 'ood.user_map'
+local proxy       = require 'ood.proxy'
+local http        = require 'ood.http'
+local dnode       = require 'ood.dnode'
 
 --[[
   node_proxy_handler
 
   Maps an authenticated user to a system user. Then proxies user's traffic to a
-  backend node with the host and port specified in the request URI.
+  backend node with the host and port specified in the request URI or environment.
 --]]
 function node_proxy_handler(r)
   -- read in OOD specific settings defined in Apache config
@@ -14,6 +15,11 @@ function node_proxy_handler(r)
   local user_map_cmd    = r.subprocess_env['OOD_USER_MAP_CMD']
   local user_env        = r.subprocess_env['OOD_USER_ENV']
   local map_fail_uri    = r.subprocess_env['OOD_MAP_FAIL_URI']
+  local secure_backend  = r.subprocess_env['OOD_SECURE_NODE_PROXY']
+  local user_host       = r.subprocess_env['OOD_SECURE_USERHOST']
+
+  -- read in OOD dynamic proxy settings defined in Apache config
+  local dynamic_proxy   = r.subprocess_env['OOD_PROXY_DYNAMIC']
 
   -- read in <LocationMatch> regular expression captures
   local host = r.subprocess_env['MATCH_HOST']
@@ -31,9 +37,25 @@ function node_proxy_handler(r)
   end
 
   -- generate connection object used in setting the reverse proxy
+  
   local conn = {}
   conn.user = user
-  conn.server = host .. ":" .. port
+
+  -- Check if we are proxying based on route database
+  if dynamic_proxy then
+    
+    conn.server = dnode.map(r, user, r.port)
+
+    -- No route found, decline and let the next handler work
+    if conn.server == "" then
+      r:custom_response(404, "No tunnel found for user")
+      return apache2.DECLINED
+    end
+  else
+    -- Proxy based on information extracted from URI
+    conn.server = host .. ":" .. port
+  end
+  
   conn.uri = uri or r.uri or '/'
 
   -- last ditch effort to ensure that the uri is at least something
@@ -43,7 +65,7 @@ function node_proxy_handler(r)
   end
 
   -- setup request for reverse proxy
-  proxy.set_reverse_proxy(r, conn)
+  proxy.set_reverse_proxy(r, conn, secure_backend, user_host)
 
   -- handle if backend server is down
   r:custom_response(503, "Failed to connect to " .. conn.server)
