@@ -497,7 +497,7 @@ Listen <%= addr_port %>
       <%= line %>
       <%- end -%>
 
-      Header edit Location "<%= @host_regex || "[^/]+" %>:\d+" "<%= @proxy_server %>:%{SERVER_PORT}s"
+      Header edit Location "<%= @user_host ? "[a-z0-9]+\." : "" %><%= @host_regex || "[^/]+" %>:\d+" "<%= @proxy_server %>:%{SERVER_PORT}s"
       Header always set Access-Control-Allow-Credentials "true"
       Header always set Access-Control-Allow-Origin "https://<%= @proxy_server %>"
       Header always set Content-Security-Policy "frame-ancestors https://<%= @proxy_server %>:%{SERVER_PORT}s;"
