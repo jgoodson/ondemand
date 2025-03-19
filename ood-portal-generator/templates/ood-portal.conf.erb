@@ -179,6 +179,9 @@ Listen <%= addr_port %>
   LuaRoot "<%= @lua_root %>"
   <%- end -%>
   LogLevel lua_module:<%= @lua_log_level %>
+  <%- if @dnode_libpath -%>
+  LuaPackageCPath <%= @dnode_libpath %>
+  <%- end -%>
 
   # Log authenticated user requests (requires min log level: info)
   LuaHookLog logger.lua logger
@@ -308,7 +311,6 @@ Listen <%= addr_port %>
   #     configures: https://<%= @servername || "localhost" %>:IN_PORT/* => http://NODE:PORT/*
   #
   <LocationMatch "^<%= @dnode_uri %>/(?<host><%= @host_regex || "[^/]+" %>)/(?<port>\d+)">
-    SetEnv OOD_DNODE_DBTYPE "<%= @dnode_dbtype %>"
     SetEnv OOD_DNODE_DBPATH "<%= @dnode_dbpath %>"
     SetEnv OOD_DNODE_HOSTNAME "<%= @proxy_server %>"
     SetEnv OOD_DNODE_PORT_START <%= @dnode_min_port %>
@@ -487,7 +489,6 @@ Listen <%= addr_port %>
       LuaScope server
 
       SetEnv OOD_PROXY_DYNAMIC true
-      SetEnv OOD_DNODE_DBTYPE "<%= @dnode_dbtype %>"
       SetEnv OOD_DNODE_DBPATH "<%= @dnode_dbpath %>"
 
       SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>

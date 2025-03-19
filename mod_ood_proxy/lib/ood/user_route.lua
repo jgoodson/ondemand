@@ -102,10 +102,11 @@ function dump(o)
   end
 end
 
-function setup(r, dbtype, dbpath, user, node, out_port, min_port, max_port)
+function setup(r, user, node, out_port, min_port, max_port)
+  local dbpath = r.subprocess_env['OOD_DNODE_DBPATH']
 
   -- Open database for user-specific routes endpoints
-  local database, err = r:dbacquire(dbtype, dbpath)
+  local database, err = r:dbacquire("sqlite3", dbpath)
   if err then
     r:err(err)
     return
@@ -164,13 +165,14 @@ end
   Get destination endpoint for user's dynamic routes
 --]]
 
-function map(r, dbtype, dbpath, user)
+function map(r, user, in_port)
+  local dbpath = r.subprocess_env['OOD_DNODE_DBPATH']
   local now = r:clock()
 
   local route_dest = ""
   -- Open database for user-specific routes endpoints
   
-  local database, err = r:dbacquire(dbtype, dbpath)
+  local database, err = r:dbacquire("sqlite3", dbpath)
   if err then
     r:err(err)
   end
@@ -182,7 +184,7 @@ function map(r, dbtype, dbpath, user)
   -- Find the route matching this request's incoming port
   if routes then
     for i, row in pairs(routes) do
-      if row[1] == tostring(r.port) then
+      if row[1] == tostring(in_port) then
 
         -- Construct host:port combo
         route_dest = row[2] .. ":" .. row[3]

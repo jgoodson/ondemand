@@ -1,7 +1,7 @@
 local user_map    = require 'ood.user_map'
 local proxy       = require 'ood.proxy'
 local http        = require 'ood.http'
-local user_route = require 'ood.user_route'
+local dnode       = require 'ood.dnode'
 
 --[[
   node_proxy_handler
@@ -19,8 +19,6 @@ function node_proxy_handler(r)
   local user_host       = r.subprocess_env['OOD_SECURE_USERHOST']
 
   -- read in OOD dynamic proxy settings defined in Apache config
-  local dbtype          = r.subprocess_env['OOD_DNODE_DBTYPE']
-  local dbpath          = r.subprocess_env['OOD_DNODE_DBPATH']
   local dynamic_proxy   = r.subprocess_env['OOD_PROXY_DYNAMIC']
 
   -- read in <LocationMatch> regular expression captures
@@ -46,7 +44,7 @@ function node_proxy_handler(r)
   -- Check if we are proxying based on route database
   if dynamic_proxy then
     
-    conn.server = user_route.map(r, dbtype, dbpath, user)
+    conn.server = dnode.map(r, user, r.port)
 
     -- No route found, decline and let the next handler work
     if conn.server == "" then

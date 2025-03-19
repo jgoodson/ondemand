@@ -1,8 +1,7 @@
 local user_map    = require 'ood.user_map'
 local proxy       = require 'ood.proxy'
 local http        = require 'ood.http'
-local user_route  = require 'ood.user_route'
-
+local dnode       = require 'ood.dnode'
 
 --[[
   dyn_setup_handler
@@ -17,8 +16,6 @@ function dyn_setup_handler(r)
   local user_env        = r.subprocess_env['OOD_USER_ENV']
 
   -- read in OOD dynamic proxy settings defined in Apache config
-  local dbtype          = r.subprocess_env['OOD_DNODE_DBTYPE']
-  local dbpath          = r.subprocess_env['OOD_DNODE_DBPATH']
   local proxy_host      = r.subprocess_env['OOD_DNODE_HOSTNAME']
   local dnode_port_lo   = r.subprocess_env['OOD_DNODE_PORT_START']
   local dnode_port_hi   = r.subprocess_env['OOD_DNODE_PORT_END']
@@ -34,7 +31,7 @@ function dyn_setup_handler(r)
   end
 
   -- Set up the dynamic proxy backend
-  local proxy_port = user_route.setup(r, dbtype, dbpath, user, host, port, dnode_port_lo, dnode_port_hi)
+  local proxy_port = dnode.setup(r, user, host, port, dnode_port_lo, dnode_port_hi)
   
   if not proxy_port then
     -- Something went wrong, return error
