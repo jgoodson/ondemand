@@ -188,6 +188,21 @@ module OodPortalGenerator
 
         output.write(content)
         dex_output.write(dex.render) if dex_enabled
+
+        # Create the user certificate signing CA if necessary
+        user_ca = CA.new(context, "ondemand_user_ca")
+        if user_ca.managed
+          user_ca.create_ca("/CN=OnDemand User CA") unless user_ca.exists?
+          # Recreate if it will expire soon and is managed by OOD
+          user_ca.recreate_ca if user_ca.expires_soon?
+        end
+
+        # Create the proxy client certificate signing CA if necessary
+        ood_ca = CA.new(context, "ondemand_ca")
+        if ood_ca.managed
+          ood_ca.create_ca("/CN=OnDemand CA") unless ood_ca.exists?
+          ood_ca.recreate_ca if ood_ca.expires_soon?
+        end
       end
 
       def update_ood_portal

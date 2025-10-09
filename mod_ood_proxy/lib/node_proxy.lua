@@ -16,7 +16,6 @@ function node_proxy_handler(r)
   local user_env        = r.subprocess_env['OOD_USER_ENV']
   local map_fail_uri    = r.subprocess_env['OOD_MAP_FAIL_URI']
   local secure_backend  = r.subprocess_env['OOD_SECURE_NODE_PROXY']
-  local user_host       = r.subprocess_env['OOD_SECURE_USERHOST']
 
   -- read in OOD dynamic proxy settings defined in Apache config
   local dynamic_proxy   = r.subprocess_env['OOD_PROXY_DYNAMIC']
@@ -65,7 +64,7 @@ function node_proxy_handler(r)
   end
 
   -- setup request for reverse proxy
-  proxy.set_reverse_proxy(r, conn, secure_backend, user_host)
+  proxy.set_reverse_proxy(r, conn, secure_backend)
 
   -- handle if backend server is down
   r:custom_response(503, "Failed to connect to " .. conn.server)

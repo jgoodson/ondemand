@@ -267,11 +267,10 @@
 # Default: false (disable this feature)
 #proxy_secure: false
 
-# Whether to reverse proxy to backend nodes using user-specific subdomain
-# Examples:
-#     node_proxy_userhost: true
-# Default: false (disable this feature)
-#proxy_userhost: false
+# TODO: ondemand_ca_dir
+# TODO: ondemand_user_ca_dir
+# TODO: ondemand_ca_managed (bool)
+# TODO: ondemand_user_ca_managed (bool)
 
 # List of SSLProxy Apache directives for secure reverse proxy
 # Example:

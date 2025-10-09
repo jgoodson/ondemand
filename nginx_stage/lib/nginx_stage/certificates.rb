@@ -78,8 +78,13 @@ module NginxStage
       @user = user
 
       @base_path = NginxStage.pun_certificate_base_path % {user_home: user.dir}
-      @cert_path = @base_path + "ca.crt"
-      @key_path = @base_path + "ca.key"
+      @cert_path = @base_path + "leaf.crt"
+      @key_path = @base_path + "leaf.key"
+      @client_ca_path = @base_path + "client_ca.crt"
+
+      @client_ca = NginxStage.pun_client_ca_path
+
+      FileUtils.cp(@client_ca, @client_ca_path) unless File.file?(@client_ca_path) or !File.file?(@client_ca)
 
       @root_ca = RootCA.new
     end
