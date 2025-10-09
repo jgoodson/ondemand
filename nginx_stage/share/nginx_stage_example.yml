@@ -137,7 +137,19 @@
 
 # Path to generated per-user NGINX secret key base file   
 #
-#pun_secret_key_base_path: '/var/lib/ondemand-nginx/config/puns/%{user}.secret_key_base.txt' 
+#pun_secret_key_base_path: '/var/lib/ondemand-nginx/config/puns/%{user}.secret_key_base.txt'
+
+# Whether to create and sign certificates for user job app servers
+#
+#pun_sign_certs: false
+
+# Path to the root CA certificate directory for the per-user CA
+#
+#pun_root_ca_dir: '/etc/pki/tls/ondemand/user/%{user}/'
+
+# Passphrase for root CA key
+#
+#pun_root_ca_key_phrase: 'THIS SHOULD BE CHANGED'
 
 # Custom format configuration for access log
 #

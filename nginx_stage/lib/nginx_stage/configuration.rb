@@ -129,7 +129,7 @@ module NginxStage
     attr_writer :pun_config_path
 
     # Path to generated per-user secret key base file
-    # @example User Bob's secret key base file
+    # @example User Bob's secret key base filepun_root_ca_key_phrase
     #   pun_config_path(user: 'bob')
     #   #=> "/var/lib/ondemand-nginx/config/puns/bob.secret_key_base.txt"
     # @param user [String] the user of the nginx process
@@ -139,6 +139,17 @@ module NginxStage
     end
 
     attr_writer :pun_secret_key_base_path
+
+    # Whether to sign certificates for user job servers
+    # @return [bool] whether to sign certificates
+    attr_accessor :pun_sign_certs
+
+    # Path to the root CA certificate directory for signing user certs
+    # @return [String] path to the root per-user CA directory
+    attr_accessor :pun_root_ca_dir
+
+    # Passphrase for root CA key
+    attr_accessor :pun_root_ca_key_phrase
 
     # Path to user's personal tmp root
     # @example User Bob's nginx tmp root
@@ -473,6 +484,10 @@ module NginxStage
       self.pun_custom_html_root = '/etc/ood/config/pun/html'
       self.pun_config_path     = '/var/lib/ondemand-nginx/config/puns/%{user}.conf'
       self.pun_secret_key_base_path = '/var/lib/ondemand-nginx/config/puns/%{user}.secret_key_base.txt'
+
+      self.pun_sign_certs         = false
+      self.pun_root_ca_dir        = '/etc/pki/tls/ondemand/user/%{user}/'
+      self.pun_root_ca_key_phrase = 'THIS SHOULD BE CHANGED'
 
       self.pun_tmp_root        = '/var/tmp/ondemand-nginx/%{user}'
       self.pun_access_log_path = '/var/log/ondemand-nginx/%{user}/access.log'
