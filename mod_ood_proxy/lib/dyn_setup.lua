@@ -14,6 +14,7 @@ function dyn_setup_handler(r)
   local user_map_match  = r.subprocess_env['OOD_USER_MAP_MATCH']
   local user_map_cmd    = r.subprocess_env['OOD_USER_MAP_CMD']
   local user_env        = r.subprocess_env['OOD_USER_ENV']
+  local secure_backend  = r.subprocess_env['OOD_SECURE_NODE_PROXY']
 
   -- read in OOD dynamic proxy settings defined in Apache config
   local proxy_host      = r.subprocess_env['OOD_DNODE_HOSTNAME']
@@ -31,7 +32,7 @@ function dyn_setup_handler(r)
   end
 
   -- Set up the dynamic proxy backend
-  local proxy_port = dnode.setup(r, user, host, port, dnode_port_lo, dnode_port_hi)
+  local proxy_port = dnode.setup(r, user, host, port, dnode_port_lo, dnode_port_hi, secure_backend)
   
   if not proxy_port then
     -- Something went wrong, return error

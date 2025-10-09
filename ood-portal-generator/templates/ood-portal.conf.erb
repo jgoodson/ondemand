@@ -250,7 +250,7 @@ Listen <%= addr_port %>
   #     <%= @ssl ? "https" : "http" %>://<%= @servername || "localhost" %>:<%= @port %><%= @node_uri %>/HOST/PORT/index.html
   #     #=> http://HOST:PORT<%= @node_uri %>/HOST/PORT/index.html
   #
-  <LocationMatch "^<%= @node_uri %>/(?<host><%= @host_regex %>)/(?<port>\d+)">
+  <LocationMatch "^<%= @node_uri %>(?<secure>s?)/(?<host><%= @host_regex %>)/(?<port>\d+)">
     <%- @auth.each do |line| -%>
     <%= line %>
     <%- end -%>
@@ -259,7 +259,7 @@ Listen <%= addr_port %>
     <%= line %>
     <%- end -%>
 
-    SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
+    SetEnv OOD_SECURE_NODE_PROXY -n "%{MATCH_SECURE}e"
 
     # ProxyPassReverse implementation
     Header edit Location "^[^/]+//[^/]+" ""
@@ -281,7 +281,7 @@ Listen <%= addr_port %>
   #     <%= @ssl ? "https" : "http" %>://<%= @servername || "localhost" %>:<%= @port %><%= @rnode_uri %>/HOST/PORT/index.html
   #     #=> http://HOST:PORT/index.html
   #
-  <LocationMatch "^<%= @rnode_uri %>/(?<host><%= @host_regex || "[^/]+" %>)/(?<port>\d+)(?<uri>/.*|)">
+  <LocationMatch "^<%= @rnode_uri %>(?<secure>s?)/(?<host><%= @host_regex || "[^/]+" %>)/(?<port>\d+)(?<uri>/.*|)">
     <%- @auth.each do |line| -%>
     <%= line %>
     <%- end -%>
@@ -290,7 +290,7 @@ Listen <%= addr_port %>
     <%= line %>
     <%- end -%>
 
-    SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
+    SetEnv OOD_SECURE_NODE_PROXY -n "%{MATCH_SECURE}e"
 
     # ProxyPassReverse implementation
     Header edit Location "^([^/]+//[^/]+)|(?=/)|^([\./]{1,}(?<!/))" "<%= @rnode_uri %>/%{MATCH_HOST}e/%{MATCH_PORT}e"
@@ -312,12 +312,12 @@ Listen <%= addr_port %>
   #     <%= @ssl ? "https" : "http" %>://<%= @servername || "localhost" %>:<%= @port %><%= @dnode_uri %>/HOST/PORT
   #     configures: https://<%= @servername || "localhost" %>:IN_PORT/* => http://NODE:PORT/*
   #
-  <LocationMatch "^<%= @dnode_uri %>/(?<host><%= @host_regex || "[^/]+" %>)/(?<port>\d+)">
+  <LocationMatch "^<%= @dnode_uri %>(?<secure>s?)/(?<host><%= @host_regex || "[^/]+" %>)/(?<port>\d+)">
     SetEnv OOD_DNODE_DBPATH "<%= @dnode_dbpath %>"
     SetEnv OOD_DNODE_HOSTNAME "<%= @proxy_server %>"
     SetEnv OOD_DNODE_PORT_START <%= @dnode_min_port %>
     SetEnv OOD_DNODE_PORT_END <%= @dnode_max_port %>
-    SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
+    SetEnv OOD_SECURE_NODE_PROXY -n "%{MATCH_SECURE}e"
 
     <%- @auth.each do |line| -%>
     <%= line %>
@@ -491,8 +491,6 @@ Listen <%= addr_port %>
 
       SetEnv OOD_PROXY_DYNAMIC true
       SetEnv OOD_DNODE_DBPATH "<%= @dnode_dbpath %>"
-
-      SetEnv OOD_SECURE_NODE_PROXY <%= @secure_backend ? 1 : 0 %>
 
       <%- @auth.each do |line| -%>
       <%= line %>

@@ -43,7 +43,7 @@ function node_proxy_handler(r)
   -- Check if we are proxying based on route database
   if dynamic_proxy then
     
-    conn.server = dnode.map(r, user, r.port)
+    conn.server, secure_backend = dnode.map(r, user, r.port)
 
     -- No route found, decline and let the next handler work
     if conn.server == "" then

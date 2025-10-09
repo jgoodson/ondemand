@@ -102,7 +102,7 @@ function dump(o)
   end
 end
 
-function setup(r, user, node, out_port, min_port, max_port)
+function setup(r, user, node, out_port, min_port, max_port, secure)
   local dbpath = r.subprocess_env['OOD_DNODE_DBPATH']
 
   -- Open database for user-specific routes endpoints
@@ -127,6 +127,7 @@ function setup(r, user, node, out_port, min_port, max_port)
           node TEXT,
           out_port INTEGER,
           access_time REAL,
+          secure INTEGER,
           UNIQUE(user, in_port) ON CONFLICT REPLACE,
           UNIQUE(user, node, out_port) ON CONFLICT REPLACE
         )
@@ -136,7 +137,7 @@ function setup(r, user, node, out_port, min_port, max_port)
     r:ivm_set("ROUTE_DATABASE_INITIALIZED", "yes")
   end
   
-  local insert, err = database:prepare(r, "INSERT INTO routes VALUES (%s, %u, %s, %u, %f)")
+  local insert, err = database:prepare(r, "INSERT INTO routes VALUES (%s, %u, %s, %u, %f, %u)")
   
   if not err then 
     -- Select incoming port for this routes, selected oldest existing if all are taken
@@ -144,7 +145,7 @@ function setup(r, user, node, out_port, min_port, max_port)
     
 
     -- If (user, in_port) exists, DB constraint will overwrite it, updating access time
-    local _, errmsg = insert:query(user, in_port, node, out_port, r:clock())
+    local _, errmsg = insert:query(user, in_port, node, out_port, r:clock(), secure)
 
     -- Close the database so we don't accumulate connections
     database:close()
@@ -188,6 +189,7 @@ function map(r, user, in_port)
 
         -- Construct host:port combo
         route_dest = row[2] .. ":" .. row[3]
+        secure = row[4]
       end
     end
   end
@@ -198,7 +200,7 @@ function map(r, user, in_port)
   local time_route_map = (r:clock() - now)/1000.0
   r:debug("Mapped '" .. user .. " on " .. r.port .. "' => '" .. route_dest .. "' [" .. time_route_map .. " ms]")
 
-  return route_dest
+  return route_dest, secure
 end
 
 return {
