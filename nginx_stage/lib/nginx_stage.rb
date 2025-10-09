@@ -19,6 +19,7 @@ require_relative "nginx_stage/generators/nginx_show_generator"
 require_relative "nginx_stage/generators/nginx_list_generator"
 require_relative "nginx_stage/generators/nginx_clean_generator"
 require_relative "nginx_stage/application"
+require_relative "nginx_stage/certificates"
 
 require 'etc'
 require 'syslog/logger'

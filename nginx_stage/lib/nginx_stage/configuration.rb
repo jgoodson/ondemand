@@ -140,6 +140,25 @@ module NginxStage
 
     attr_writer :pun_secret_key_base_path
 
+    # Whether to sign certificates for user job servers
+    # @return [bool] whether to sign certificates
+    attr_accessor :pun_sign_certs
+
+    # Path to the root CA certificate for signing user certs
+    # @return [String] path to the root CA cert
+    attr_accessor :pun_root_ca_cert_path
+
+    # Path to the root CA key for signing user certs
+    # @return [String] path to the root CA key
+    attr_accessor :pun_root_ca_key_path
+
+    # Passphrase for root CA key
+    attr_accessor :pun_root_ca_key_phrase
+
+    # Path to the root CA key for Apache reverse proxy client certs
+    # @return [String] path to the root CA cert
+    attr_accessor :pun_client_ca_path
+
     # Path to user's personal tmp root
     # @example User Bob's nginx tmp root
     #   pun_tmp_root(user: 'bob')
@@ -473,6 +492,12 @@ module NginxStage
       self.pun_custom_html_root = '/etc/ood/config/pun/html'
       self.pun_config_path     = '/var/lib/ondemand-nginx/config/puns/%{user}.conf'
       self.pun_secret_key_base_path = '/var/lib/ondemand-nginx/config/puns/%{user}.secret_key_base.txt'
+
+      self.pun_sign_certs         = false
+      self.pun_root_ca_cert_path  = '/etc/pki/tls/ondemand/user/ca.crt'
+      self.pun_root_ca_key_path   = '/etc/pki/tls/ondemand/user/private/ca.key'
+      self.pun_client_ca_path     = '/etc/pki/tls/ondemand/infra/ca.crt'
+      self.pun_root_ca_key_phrase = 'THIS SHOULD BE CHANGED'
 
       self.pun_tmp_root        = '/var/tmp/ondemand-nginx/%{user}'
       self.pun_access_log_path = '/var/log/ondemand-nginx/%{user}/access.log'
