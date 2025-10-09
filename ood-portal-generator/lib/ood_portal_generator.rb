@@ -9,6 +9,7 @@ require 'ood_portal_generator/version'
 require 'ood_portal_generator/application'
 require 'ood_portal_generator/view'
 require 'ood_portal_generator/dex'
+require 'ood_portal_generator/ca'
 
 # The main namespace for ood_portal_generator
 module OodPortalGenerator

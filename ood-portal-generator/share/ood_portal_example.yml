@@ -251,17 +251,47 @@
 # Default: null (disable this feature)
 #rnode_uri: null
 
-# Whether to reverse proxy to backend nodes using TLS
-# Examples:
-#     node_proxy_secure: true
-# Default: false (disable this feature)
-#proxy_secure: false
+# Sub-uri used to reverse proxy to backend web server running on node that
+# requires *absolute* URI paths using alternate high ports
+# Example:
+#     dnode_uri: '/dnode'
+# Default: null (disable this feature)
+#dnode_uri: null
 
-# Whether to reverse proxy to backend nodes using user-specific subdomain
+# Path to sqlite DB used to store dnode proxy routes
+# Example:
+#     dnode_dbpath: '/path/to/sqlite/proxy.db'
+# Default: '/var/www/ood/db/proxy.db'
+#dnode_dbpath: '/var/www/ood/db/proxy.db'
+
+# Path to custom Lua module to implement dnode proxy routes
+# Example:
+#     dnode_libpath: '/path/to/lua/dnode.so'
+# Default: nil (disable this feature)
+#dnode_libpath: '/opt/ood/dnode_mapper/lib/dnode.so'
+
+# Starting high port for dnode proxy routing
+# Example:
+#     dnode_min_port: 20000
+# Default: 10000
+#dnode_min_port: 10000
+
+# Ending high port for dnode proxy routing
+# Example:
+#     dnode_max_port: 20010
+# Default: 10004
+#dnode_max_port: 10004
+
+# Whether to enable reverse proxy to backend nodes using TLS
 # Examples:
-#     node_proxy_userhost: true
+#     secure_backend: true
 # Default: false (disable this feature)
-#proxy_userhost: false
+#secure_backend: false
+
+# TODO: ondemand_ca_dir
+# TODO: ondemand_user_ca_dir
+# TODO: ondemand_ca_managed (bool)
+# TODO: ondemand_user_ca_managed (bool)
 
 # List of SSLProxy Apache directives for secure reverse proxy
 # Example:
@@ -270,8 +300,8 @@
 #       - 'SSLProxyCipherSuite EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH'
 #       - 'SSLProxyMachineCertificateFile "/etc/pki/tls/certs/ondemand-proxy.crt"'
 #       - 'SSLProxyProtocol +TLSv1.1 +TLSv1.2 +TLSv1.3'
-# Default: null (no reverse proxy SSL support)
-#ssl_proxy: null
+# Default: [] (no reverse proxy SSL support)
+#ssl_proxy: []
 
 #
 # Per-user NGINX Passenger apps

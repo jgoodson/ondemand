@@ -3,23 +3,23 @@
 
   Modify a given request to utilize mod_proxy for reverse proxying.
 --]]
-function set_reverse_proxy(r, conn, secure, userhost)
+function set_reverse_proxy(r, conn, secure)
   -- find protocol used by parsing the request headers
   local protocol = (r.headers_in['Upgrade'] and "ws://" or "http://")
-
-  if secure then
-    protocol = (protocol == "ws://" and "wss://" or "https://")
-  end
 
   -- define reverse proxy destination using connection object
   if conn.socket then
     r.handler = "proxy:unix:" .. conn.socket .. "|" .. protocol .. "localhost"
-  elseif userhost then
-    r.handler = "proxy:" .. protocol .. conn.user .. "." .. conn.server
   else
     r.handler = "proxy:" .. protocol .. conn.server
   end
 
+  -- If using secure userhost SSL then pass the specific hostname to mod_ssl
+  if secure then
+    protocol = (protocol == "ws://" and "wss://" or "https://")
+    Apache2.Connection.notes["proxy-request-hostname"] = r.user
+  end
+  
   r.filename = conn.uri
 
   -- include useful information for the backend server

@@ -7,7 +7,7 @@ module OodPortalGenerator
   class View
     attr_reader :ssl, :protocol, :proxy_server, :port, :dex_uri
     attr_accessor :user_map_match, :user_map_cmd, :logout_redirect, :dex_http_port, :dex_enabled
-    attr_accessor :oidc_uri, :oidc_client_secret, :oidc_remote_user_claim, :oidc_client_id, :oidc_provider_metadata_url
+    attr_accessor :oidc_uri, :oidc_client_secret, :oidc_remote_user_claim, :oidc_client_id, :oidc_provider_metadata_url, :oidc_redirect_uri
 
     # let the application set the auth if it needs to
     attr_writer :auth
@@ -66,9 +66,6 @@ module OodPortalGenerator
       # Redirect for the root uri
       @root_uri = opts.fetch(:root_uri, "/pun/sys/dashboard")
 
-      # Portal analytics
-      @analytics = opts.fetch(:analytics, nil)
-
       #
       # Available sub-uri's and their configurations
       #
@@ -82,9 +79,8 @@ module OodPortalGenerator
       @logout_redirect = opts.fetch(:logout_redirect, "/pun/sys/dashboard/logout")
 
       # Reverse proxy security
-      @secure_backend = opts.fetch(:proxy_secure, false)
-      @user_host      = opts.fetch(:proxy_userhost, false)
-      @ssl_proxy      = opts.fetch(:ssl_proxy, nil)
+      @secure_backend = opts.fetch(:secure_backend, false)
+      @ssl_proxy      = opts.fetch(:ssl_proxy, [])
 
       # Basic reverse proxy sub-uri
       @host_regex = opts.fetch(:host_regex, "[^/]+")
@@ -95,7 +91,7 @@ module OodPortalGenerator
       @dnode_uri       = opts.fetch(:dnode_uri, nil)
       @dnode_dbpath    = opts.fetch(:dnode_dbpath, "/var/www/ood/db/proxy.db")
       default_dnode = "/opt/ood/dnode_mapper/lib/dnode.so"
-      if File.exist(default_dnode)
+      if File.exist?(default_dnode)
         @dnode_libpath   = opts.fetch(:dnode_libpath, default_dnode)
       else
         @dnode_libpath   = opts.fetch(:dnode_libpath, nil)
@@ -125,6 +121,7 @@ module OodPortalGenerator
       @oidc_provider_metadata_url       = opts.fetch(:oidc_provider_metadata_url, nil)
       @oidc_client_id                   = opts.fetch(:oidc_client_id, nil)
       @oidc_client_secret               = opts.fetch(:oidc_client_secret, nil)
+      @oidc_redirect_uri                = opts.fetch(:oidc_redirect_uri, @oidc_uri || '/oidc')
       @oidc_remote_user_claim           = opts.fetch(:oidc_remote_user_claim, 'preferred_username')
       @oidc_scope                       = opts.fetch(:oidc_scope, "openid profile email")
       @oidc_crypto_passphrase           = opts.fetch(:oidc_crypto_passphrase, Digest::SHA1.hexdigest(servername))
