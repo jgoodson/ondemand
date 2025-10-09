@@ -109,6 +109,20 @@ module NginxStage
       end
     end
 
+    # Generate user certificate if it doesn't already exist or expires soon
+    add_hook :create_user_certificate do
+      begin
+        cert = UserCertificate.new(user)
+        cert.generate unless cert.valid?
+      rescue => e
+        $stderr.puts "Failed to create user certificate: #{cert.cert_path}"
+        $stderr.puts e.message
+        $stderr.puts e.backtrace
+
+        abort
+      end
+    end
+
     # Run the pre hook command. This eats the output and doesn't affect
     # the overall status of the PUN startup
     # This must come before anything that cleans the process environment

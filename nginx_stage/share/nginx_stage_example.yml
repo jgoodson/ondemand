@@ -134,6 +134,18 @@
 #
 #pun_secret_key_base_path: '/var/lib/ondemand-nginx/config/puns/%{user}.secret_key_base.txt' 
 
+# Path to generated user leaf certificate
+#
+#pun_certificate_path: '%{user_home}/.ondemand/ondemand_cert' 
+
+# Path to the root CA certificate for signing user certs
+#
+#pun_root_ca_cert_path: '/etc/pki/tls/certs/ondemand_user_ca.crt'
+
+# Path to the root CA key for signing user certs
+#
+#pun_root_ca_key_path: '/etc/pki/tls/private/ondemand_user_ca.key'
+
 # Custom format configuration for access log
 #
 #pun_log_format: '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for"'
