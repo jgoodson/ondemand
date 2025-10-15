@@ -149,6 +149,8 @@ module NginxStage
       "ALLOWED_HOSTS" => ENV['OOD_ALLOWED_HOSTS'],
       # set the duplicate to keep clean_nginx_env idempotent
       "OOD_ALLOWED_HOSTS" => ENV['OOD_ALLOWED_HOSTS'],
+      # set the job certificate directory if present
+      "OOD_JOB_CERT_DIR" => pun_sign_certs ? pun_tmp_root(user: user) + '/job_certs' : nil,
     }.merge(pun_custom_env).merge(preserve_env_declarations.map { |k| [ k, ENV[k] ] }.to_h))
   end
 

@@ -246,6 +246,17 @@ module BatchConnect
       cluster.batch_connect_template(template: script_type, **context)
     end
 
+    # Stage the job certificates if provided by the PUN
+    def stage_certificates
+      pun_certs = ENV['OOD_JOB_CERT_DIR']
+      return unless pun_certs
+
+      certificate_dir.tap { |d| FileUtils.mkdir_p(d.to_s, mode: 0o700) unless d.exist? }
+      FileUtils.install "#{pun_certs}/leaf.crt", certificate_dir.to_s, mode: 0o400
+      FileUtils.install "#{pun_certs}/leaf.key", certificate_dir.to_s, mode: 0o400
+      FileUtils.install "#{pun_certs}/client_ca.crt", certificate_dir.to_s, mode: 0o400
+    end
+
     # Stage and submit a session from an app and its context
     # @param app [BatchConnect::App] batch connect app
     # @param context [BatchConnect::SessionContext] context used for session
@@ -283,6 +294,9 @@ module BatchConnect
 
       # Output user submitted context attributes for debugging purposes
       user_defined_context_file.write(JSON.pretty_generate context.as_json)
+
+      # transfer certificate files for secure backend if provided
+      stage_certificates
 
       # Render all template files using ERB
       render_erb_files(
@@ -551,6 +565,12 @@ module BatchConnect
     # @return [Pathname] output file
     def output_file
       staged_root.join("output.log")
+    end
+
+    # Path to the directory containing job certificate
+    # @return [Pathname] certificate directory
+    def certificate_dir
+      staged_root.join('job_certs')
     end
 
     # Path to login shell used by the script

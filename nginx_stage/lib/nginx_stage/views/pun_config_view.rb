@@ -145,6 +145,18 @@ module NginxStage
       NginxStage.disable_bundle_user_config
     end
 
+    def per_user_certificate
+      File.join NginxStage.pun_tmp_root(user: user), "job_certs", "leaf.crt"
+    end
+
+    def per_user_certificate_key
+      File.join NginxStage.pun_tmp_root(user: user), "job_certs", "leaf.key"
+    end
+
+    def user_cert_ca
+      File.join NginxStage.pun_root_ca_dir % {user: user}, "user_ca.crt"
+    end
+
     # View used to confirm whether the user wants to restart the PUN to reload
     # configuration changes
     # @return [String] restart confirmation view
