@@ -76,6 +76,8 @@
 
   SetEnv OOD_ALLOWED_HOSTS "8.8.8.8,example.com"
 
+  # Set this globally since we use it for PUN and node proxying
+  SetEnv OOD_PUN_SOCKET_ROOT "/var/run/ondemand-nginx"
 
   #
   # Below is used for sub-uri's this Open OnDemand portal supports
@@ -92,6 +94,7 @@
     AllowOverride None
     Require all granted
   </Directory>
+
 
 
 
@@ -116,7 +119,6 @@
     # ProxyPassReverseCookiePath implementation (less restrictive)
     Header edit* Set-Cookie ";\s*(?i)Path\s*=(?-i)(?!\s*/pun)[^;]*" "; Path=/pun"
 
-    SetEnv OOD_PUN_SOCKET_ROOT "/var/run/ondemand-nginx"
     SetEnv OOD_PUN_MAX_RETRIES "5"
     LuaHookFixups pun_proxy.lua pun_proxy_handler
 
@@ -165,6 +167,7 @@
     RewriteRule ^.*$ /public/maintenance/index.html [R=503,L]
     ErrorDocument 503 /public/maintenance/index.html
   </Directory>
+
 
 
 </VirtualHost>

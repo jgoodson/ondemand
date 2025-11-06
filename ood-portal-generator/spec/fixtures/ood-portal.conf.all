@@ -111,6 +111,8 @@ Listen 8080
 
   SetEnv OOD_ALLOWED_HOSTS "foo.example.com,test.proxy.name,test.server.name"
 
+  # Set this globally since we use it for PUN and node proxying
+  SetEnv OOD_PUN_SOCKET_ROOT "/path/to/pun/sockets"
 
   #
   # Below is used for sub-uri's this Open OnDemand portal supports
@@ -174,6 +176,7 @@ Listen 8080
     LuaHookFixups node_proxy.lua node_proxy_handler
   </LocationMatch>
 
+
   # Reverse proxy traffic to backend PUNs through Unix domain sockets:
   #
   #     https://test.server.name:8080/my_pun_apps/dev/app/simulations/1
@@ -195,7 +198,6 @@ Listen 8080
     # ProxyPassReverseCookiePath implementation (less restrictive)
     Header edit* Set-Cookie ";\s*(?i)Path\s*=(?-i)(?!\s*/my_pun_apps)[^;]*" "; Path=/my_pun_apps"
 
-    SetEnv OOD_PUN_SOCKET_ROOT "/path/to/pun/sockets"
     SetEnv OOD_PUN_MAX_RETRIES "3000"
     LuaHookFixups pun_proxy.lua pun_proxy_handler
 
@@ -282,4 +284,5 @@ Listen 8080
     AuthType openid-connect
     Require valid-user
   </Directory>
+
 </VirtualHost>

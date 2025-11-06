@@ -211,7 +211,6 @@ Listen <%= addr_port %>
   <%- @custom_vhost_directives.to_a.each do |line| -%>
   <%= line %>
   <%- end -%>
-
   # Set this globally since we use it for PUN and node proxying
   SetEnv OOD_PUN_SOCKET_ROOT "<%= @pun_socket_root %>"
 
