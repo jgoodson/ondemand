@@ -151,6 +151,10 @@
 #
 #pun_root_ca_key_phrase: 'THIS SHOULD BE CHANGED'
 
+# Resolved the PUN Nginx uses for resolving app upstreams
+#
+#nginx_resolver: '127.0.0.53'
+
 # Custom format configuration for access log
 #
 #pun_log_format: '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for"'

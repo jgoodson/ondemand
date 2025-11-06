@@ -85,6 +85,11 @@ http {
   tcp_nopush   on;
   client_max_body_size <%= nginx_file_upload_max %>;
 
+  map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+  }
+
   server {
     listen      unix:<%= socket_path %>;
     server_name localhost;
@@ -119,6 +124,23 @@ http {
     location ~ /pun/html/([0-9a-z_\.]+)$ {
       add_header Cache-Control "no-store";
       alias <%= default_html_root %>/$1;
+    }
+
+    location = /proxy {
+      resolver <%= nginx_resolver %>;
+      proxy_pass https://$http_x_ood_upstream$http_x_ood_req_uri;
+      proxy_ssl_certificate <%= per_user_certificate %>;
+      proxy_ssl_certificate_key <%= per_user_certificate_key %>;
+
+      proxy_ssl_verify on;
+      proxy_ssl_name <%= user %>;
+      proxy_ssl_server_name on;
+      proxy_ssl_trusted_certificate <%= user_cert_ca %>;
+      proxy_ssl_protocols TLSv1.2 TLSv1.3;
+
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
     }
 
     # redirect all the old apps to the dashboard

@@ -14,6 +14,8 @@ function node_proxy_handler(r)
   local user_map_cmd    = r.subprocess_env['OOD_USER_MAP_CMD']
   local user_env        = r.subprocess_env['OOD_USER_ENV']
   local map_fail_uri    = r.subprocess_env['OOD_MAP_FAIL_URI']
+  local pun_socket_root = r.subprocess_env['OOD_PUN_SOCKET_ROOT']
+  local node_pun_proxy  = r.subprocess_env['OOD_PUN_PROXY']
 
   -- read in <LocationMatch> regular expression captures
   local host = r.subprocess_env['MATCH_HOST']
@@ -34,6 +36,15 @@ function node_proxy_handler(r)
   local conn = {}
   conn.user = user
   conn.server = host .. ":" .. port
+ 
+  -- Route the request through the PUN socket if we are using that method
+  if node_pun_proxy then
+    pun_proxy = true
+    conn.socket = pun_socket_root .. "/" .. user .. "/passenger.sock"
+  else
+    pun_proxy = false
+  end
+   
   conn.uri = uri or r.uri or '/'
 
   -- last ditch effort to ensure that the uri is at least something
@@ -43,7 +54,7 @@ function node_proxy_handler(r)
   end
 
   -- setup request for reverse proxy
-  proxy.set_reverse_proxy(r, conn)
+  proxy.set_reverse_proxy(r, conn, pun_proxy)
 
   -- handle if backend server is down
   r:custom_response(503, "Failed to connect to " .. conn.server)

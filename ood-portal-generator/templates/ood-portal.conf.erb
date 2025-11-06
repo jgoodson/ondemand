@@ -197,6 +197,9 @@ Listen <%= addr_port %>
   <%= line %>
   <%- end -%>
 
+  # Set this globally since we use it for PUN and node proxying
+  SetEnv OOD_PUN_SOCKET_ROOT "<%= @pun_socket_root %>"
+
   #
   # Below is used for sub-uri's this Open OnDemand portal supports
   #
@@ -299,7 +302,6 @@ Listen <%= addr_port %>
     # ProxyPassReverseCookiePath implementation (less restrictive)
     Header edit* Set-Cookie ";\s*(?i)Path\s*=(?-i)(?!\s*<%= @pun_uri %>)[^;]*" "; Path=<%= @pun_uri %>"
 
-    SetEnv OOD_PUN_SOCKET_ROOT "<%= @pun_socket_root %>"
     SetEnv OOD_PUN_MAX_RETRIES "<%= @pun_max_retries %>"
     LuaHookFixups pun_proxy.lua pun_proxy_handler
 

@@ -151,6 +151,10 @@ module NginxStage
     # Passphrase for root CA key
     attr_accessor :pun_root_ca_key_phrase
 
+    # IP address of DNS resolver to be used by PUN for resolving node hostnames
+    # @return [String] DNS server address
+    attr_accessor :nginx_resolver
+ 
     # Path to user's personal tmp root
     # @example User Bob's nginx tmp root
     #   pun_tmp_root(user: 'bob')
@@ -488,6 +492,7 @@ module NginxStage
       self.pun_sign_certs         = false
       self.pun_root_ca_dir        = '/etc/pki/tls/ondemand/user/%{user}/'
       self.pun_root_ca_key_phrase = 'THIS SHOULD BE CHANGED'
+      self.nginx_resolver         = '127.0.0.1'
 
       self.pun_tmp_root        = '/var/tmp/ondemand-nginx/%{user}'
       self.pun_access_log_path = '/var/log/ondemand-nginx/%{user}/access.log'

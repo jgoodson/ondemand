@@ -145,6 +145,10 @@ module NginxStage
       NginxStage.disable_bundle_user_config
     end
 
+    def nginx_resolver 
+      NginxStage.nginx_resolver
+    end
+
     def per_user_certificate
       File.join NginxStage.pun_tmp_root(user: user), "job_certs", "leaf.crt"
     end
